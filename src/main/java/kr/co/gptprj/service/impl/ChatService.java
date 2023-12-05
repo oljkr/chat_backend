@@ -7,7 +7,7 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import kr.co.gptprj.domain.Chat;
+import kr.co.gptprj.domain.Message;
 import kr.co.gptprj.domain.OpenAiResponse;
 import kr.co.gptprj.domain.Prompt;
 import kr.co.gptprj.service.IChatService;
@@ -25,13 +25,15 @@ public class ChatService implements IChatService {
 	private String apiKey;
 
 	@Override
-	public String chatWithGPT(Prompt request) throws Exception {
+	public Message chatWithGPT(Prompt request) throws Exception {
 		HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setBearerAuth(apiKey);
         
         String prompt = request.getPrompt();
-        String content = prompt.replace("\n", "\\n").replace("\t", "\\t");
+        String content = prompt.replace("\n", "\\n").replace("\t", "\\t").replace("\"", "\\\"");
+
+        System.out.println(content);
         // 요청 바디 생성
         String requestBody = String.format("{\"messages\":[{\"role\":\"user\",\"content\":\"%s\"}],\"model\":\"gpt-4-1106-preview\"}", content);
 
@@ -40,9 +42,14 @@ public class ChatService implements IChatService {
         // 요청 보내기
         RestTemplate restTemplate = new RestTemplate();
         OpenAiResponse response = restTemplate.postForObject(openAiApiUrl, entity, OpenAiResponse.class);
-
+        System.out.println(response.getChoices().get(0).getMessage().getContent().trim());
+        
+//        if (response != null && response.getChoices() != null && !response.getChoices().isEmpty()) {
+//            return response.getChoices().get(0).getMessage().getContent().trim();
+//        }
+        
         if (response != null && response.getChoices() != null && !response.getChoices().isEmpty()) {
-            return response.getChoices().get(0).getMessage().getContent().trim();
+            return response.getChoices().get(0).getMessage();
         }
 
         return null;

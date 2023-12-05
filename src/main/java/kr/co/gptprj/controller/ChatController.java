@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import kr.co.gptprj.domain.Message;
 import kr.co.gptprj.domain.Prompt;
 import kr.co.gptprj.service.IChatService;
 import lombok.RequiredArgsConstructor;
@@ -30,7 +31,7 @@ public class ChatController {
 	private final IChatService service;
 	
 	@PostMapping
-	public ResponseEntity<String> chatWithGPT(@RequestBody Prompt request) throws Exception {
+	public ResponseEntity<Message> chatWithGPT(@RequestBody Prompt request) throws Exception {
 		log.info("chatWithGPT");
 	
 		return new ResponseEntity<>(service.chatWithGPT(request), HttpStatus.OK);
