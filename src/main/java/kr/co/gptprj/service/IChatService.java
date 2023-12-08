@@ -1,9 +1,9 @@
 package kr.co.gptprj.service;
 
-import kr.co.gptprj.domain.Message;
-import kr.co.gptprj.domain.Prompt;
+import kr.co.gptprj.domain.openai.MessageVO;
+import kr.co.gptprj.domain.openai.PromptVO;
 
 public interface IChatService {
-	Message chatWithGPT(Prompt request) throws Exception;
+	MessageVO chatWithGPT(PromptVO request) throws Exception;
 	
 }
