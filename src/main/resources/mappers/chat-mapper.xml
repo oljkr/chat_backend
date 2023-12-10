@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+     "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="kr.co.gptprj.mapper.ChatMapper">	
+	
+	<select id="selectChatList" resultType="kr.co.gptprj.domain.common.ChatVO">
+	    SELECT chat_id, code, title, content, gen_date, gen_time
+	    FROM chat
+	    WHERE del_yn != 'Y'
+	    ORDER BY chat_id
+	</select>
+	
+	<select id="selectChat" resultType="kr.co.gptprj.domain.common.ChatVO">
+	    SELECT chat_id, code, title, content, gen_date, gen_time, del_yn
+	    FROM chat
+	    WHERE chat_id = #{chatId}
+	</select>
+		
+	<insert id="insertChat" parameterType="kr.co.gptprj.domain.common.ChatVO" useGeneratedKeys="true" keyProperty="chatId" keyColumn="chat_id">
+		INSERT INTO chat(code, model_id, title, content, gen_date, gen_time) 
+		VALUES (#{code}, 1, #{title}, #{content}, #{genDate}, #{genTime});
+	</insert>
+	
+</mapper>

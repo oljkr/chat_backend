@@ -1,8 +1,6 @@
-package kr.co.gptprj.domain;
+package kr.co.gptprj.domain.common;
 
 import java.time.LocalDateTime;
-
-import javax.validation.constraints.NotBlank;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 
@@ -13,13 +11,15 @@ import lombok.ToString;
 @Getter
 @Setter
 @ToString
-public class Prompt {
-	private Long num;
+public class modelVO {
 	
-	@NotBlank
-	private String prompt;
+	private Long modelId;
+	private String title;
 	
 	@JsonFormat(pattern="yyyy-MM-dd HH:mm")
-	private LocalDateTime regDate;	
+	private LocalDateTime registerDt;
+	
+	private String delYn;
+	
 
 }
