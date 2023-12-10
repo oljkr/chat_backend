@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import kr.co.gptprj.domain.common.ChatVO;
 import kr.co.gptprj.domain.openai.MessageVO;
 import kr.co.gptprj.domain.openai.PromptVO;
 import kr.co.gptprj.service.IChatService;
@@ -30,11 +31,26 @@ public class ChatController {
 
 	private final IChatService service;
 	
+	@GetMapping
+	public ResponseEntity<List<ChatVO>> list() throws Exception {
+		log.info("selectchatlist");
+	
+		return new ResponseEntity<>(service.allChatList(), HttpStatus.OK);
+	}
+	
 	@PostMapping
-	public ResponseEntity<MessageVO> chatWithGPT(@RequestBody PromptVO request) throws Exception {
+	public ResponseEntity<List<ChatVO>> chatWithGPT(@RequestBody PromptVO request) throws Exception {
 		log.info("chatWithGPT");
 	
 		return new ResponseEntity<>(service.chatWithGPT(request), HttpStatus.OK);
-	}	
+	}
+	
+//	@PostMapping
+//	public ResponseEntity<MessageVO> chatWithGPT(@RequestBody PromptVO request) throws Exception {
+//		log.info("chatWithGPT");
+//	
+//		return new ResponseEntity<>(service.chatWithGPT(request), HttpStatus.OK);
+//	}
+	
 
 }

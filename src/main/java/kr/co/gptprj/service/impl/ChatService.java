@@ -1,6 +1,8 @@
 package kr.co.gptprj.service.impl;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
@@ -30,10 +32,24 @@ public class ChatService implements IChatService {
 	private String openAiApiUrl;
 	@Value("${api.key}")
 	private String apiKey;
-
+	
+	//전체 대화 목록 조회
 	@Override
-	public MessageVO chatWithGPT(PromptVO request) throws Exception {	
+	public List<ChatVO> allChatList() throws Exception {
+		log.info(chatMapper.selectChatList().toString());
+		return chatMapper.selectChatList();		
+	}
+	
+	//단일 대화 조회
+	public ChatVO oneChat(ChatVO chatVO) throws Exception {
+		return chatMapper.selectChat(chatVO);
+	}
+
+	//대화 주고 받기
+	@Override
+	public List<ChatVO> chatWithGPT(PromptVO request) throws Exception {
 		ChatVO chatVO = new ChatVO();
+		List<ChatVO> oneChat = new ArrayList<>();
 		
 		HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
@@ -63,11 +79,11 @@ public class ChatService implements IChatService {
         
         // 질문을 db에 insert
         int q=chatMapper.insertChat(chatVO);
+        log.info("after question:"+chatVO.toString());
+        oneChat.add(oneChat(chatVO));
         log.info("question insert success:"+q);
+        log.info("insertAfertOneChat1"+oneChat.toString());
         
-//        if (response != null && response.getChoices() != null && !response.getChoices().isEmpty()) {
-//            return response.getChoices().get(0).getMessage().getContent().trim();
-//        }
         if (response != null && response.getChoices() != null && !response.getChoices().isEmpty()) {
         	chatVO.setCode('a');
             chatVO.setContent(response.getChoices().get(0).getMessage().getContent().trim());
@@ -79,8 +95,10 @@ public class ChatService implements IChatService {
         	//답변을 db에 insert
             int a=chatMapper.insertChat(chatVO);
             log.info("answer insert success:"+a);
-            
-            return response.getChoices().get(0).getMessage();
+            oneChat.add(oneChat(chatVO));
+            log.info("insertAfertOneChat2"+oneChat.toString());
+
+            return oneChat;
         }
 
         return null;
