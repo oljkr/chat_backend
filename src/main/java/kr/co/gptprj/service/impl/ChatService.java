@@ -2,17 +2,23 @@ package kr.co.gptprj.service.impl;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import kr.co.gptprj.common.DateUtil;
 import kr.co.gptprj.domain.common.ChatVO;
+import kr.co.gptprj.domain.openai.ChatRequest;
 import kr.co.gptprj.domain.openai.MessageVO;
 import kr.co.gptprj.domain.openai.OpenAiResponseVO;
 import kr.co.gptprj.domain.openai.PromptVO;
@@ -56,18 +62,32 @@ public class ChatService implements IChatService {
         headers.setBearerAuth(apiKey);
         
         String prompt = request.getPrompt();
-        String content = prompt.replace("\n", "\\n").replace("\t", "\\t").replace("\"", "\\\"");
+        String content = prompt.replace("\n", "\\n").replace("\t", "\\t").replace("\"", "\\\"").replace("\'", "\\\'");
 
         System.out.println(content);
-        // 요청 바디 생성
-        String requestBody = String.format("{\"messages\":[{\"role\":\"user\",\"content\":\"%s\"}],\"model\":\"gpt-4-1106-preview\"}", content);
+        
+        ObjectMapper objectMapper = new ObjectMapper();
+     // 요청 바디 생성
+        ChatRequest.Message message = new ChatRequest.Message("user", content);
+        List<ChatRequest.Message> messagesList = Collections.singletonList(message);
+
+        ChatRequest chatRequest = new ChatRequest(messagesList, "gpt-4-1106-preview");
+
+        String requestBody = objectMapper.writeValueAsString(chatRequest);
 
         HttpEntity<String> entity = new HttpEntity<>(requestBody, headers);
-
+        
+        OpenAiResponseVO response = null;
         // 요청 보내기 & 응답받기
         RestTemplate restTemplate = new RestTemplate();
-        OpenAiResponseVO response = restTemplate.postForObject(openAiApiUrl, entity, OpenAiResponseVO.class);
-        System.out.println(response.getChoices().get(0).getMessage().getContent().trim());
+        try {
+        	response = restTemplate.postForObject(openAiApiUrl, entity, OpenAiResponseVO.class);
+            System.out.println(response.getChoices().get(0).getMessage().getContent().trim());
+		} catch (HttpClientErrorException e) {
+			// 예외 처리 코드 추가
+	        System.err.println("OpenAI API 요청 실패: " + e.getRawStatusCode() + " " + e.getResponseBodyAsString());
+	        throw e; // 예외를 다시 던져서 호출자에게 전달
+		}
         
         chatVO.setCode('q');
         chatVO.setContent(content);
@@ -82,7 +102,7 @@ public class ChatService implements IChatService {
         log.info("after question:"+chatVO.toString());
         oneChat.add(oneChat(chatVO));
         log.info("question insert success:"+q);
-        log.info("insertAfertOneChat1"+oneChat.toString());
+        log.info("insertAfterOneChat1"+oneChat.toString());
         
         if (response != null && response.getChoices() != null && !response.getChoices().isEmpty()) {
         	chatVO.setCode('a');
@@ -96,7 +116,7 @@ public class ChatService implements IChatService {
             int a=chatMapper.insertChat(chatVO);
             log.info("answer insert success:"+a);
             oneChat.add(oneChat(chatVO));
-            log.info("insertAfertOneChat2"+oneChat.toString());
+            log.info("insertAfterOneChat2"+oneChat.toString());
 
             return oneChat;
         }
